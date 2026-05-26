@@ -275,38 +275,24 @@ export const useConversations = () => {
   // Subscribe to real-time updates for messages (new messages, reads, deletes)
   useEffect(() => {
     if (!user?.id) return;
-    //supabase.removeAllChannels();
+
+    const channelName = `conversations-changes-${user.id}`;
+
+    // Remove old existing channel first
+    const existingChannel = supabase
+      .getChannels()
+      .find((c) => c.topic === `realtime:${channelName}`);
+
+    if (existingChannel) {
+      supabase.removeChannel(existingChannel);
+    }
 
     const channel = supabase
-      .channel(`conversations-changes-${user.id}`)
-      //.channel('conversations-changes')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-        },
-        () => {
-          fetchConversations();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'messages',
-        },
-        () => {
-          // Refetch when messages are marked as read
-          fetchConversations();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
+          event: '*',
           schema: 'public',
           table: 'messages',
         },
