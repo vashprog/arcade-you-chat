@@ -274,12 +274,12 @@ export const useConversations = () => {
 
   // Subscribe to real-time updates for messages (new messages, reads, deletes)
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
     //supabase.removeAllChannels();
 
     const channel = supabase
-      //.channel(`conversations-changes-${user.id}`)
-      .channel('conversations-changes')
+      .channel(`conversations-changes-${user.id}`)
+      //.channel('conversations-changes')
       .on(
         'postgres_changes',
         {
@@ -319,7 +319,7 @@ export const useConversations = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user?.id]);
 
   return {
     conversations,
